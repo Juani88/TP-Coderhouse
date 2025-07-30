@@ -1,100 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { db } from "../firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 const Productos = ({ filtro = () => true }) => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [productosDB, setProductosDB] = useState([]);
 
-  const productos = [
-    {
-      id: 1,
-      nombre: "Katana tradicional",
-      descripcion: "Forjada artesanalmente, ideal para exhibición o entrenamiento.",
-      precio: 1000,
-      imagen: "/imagenes/katana2.png"
-    },
-    {
-      id: 2,
-      nombre: "Sai tradicional",
-      descripcion: "Par de sais tradicionales de acero, ideales para prácticas de kobudo.",
-      precio: 2000,
-      imagen: "/imagenes/sai.png"
-    },
-    {
-      id: 3,
-      nombre: "Nunchaku tradicional",
-      descripcion: "Hecho de madera resistente con cadena metálica. Ideal para entrenamiento clásico.",
-      precio: 3000,
-      imagen: "/imagenes/nunchaku.jpg"
-    },
-    {
-      id: 4,
-      nombre: "Bo tradicional",
-      descripcion: "Bastón largo de madera, perfecto para técnicas tradicionales de artes marciales.",
-      precio: 4000,
-      imagen: "/imagenes/bo.jpg"
-    },
-    {
-      id: 5,
-      nombre: "Karategi Blanco",
-      descripcion: "Uniforme tradicional para karate, confeccionado en algodón resistente y cómodo.",
-      precio: 5000,
-      imagen: "/imagenes/karategi_blanco.png"
-    },
-    {
-      id: 6,
-      nombre: "Karategi Negro",
-      descripcion: "Uniforme de karate color negro, ideal para entrenamientos avanzados y exhibiciones.",
-      precio: 6000,
-      imagen: "/imagenes/karategi_negro.jpg"
-    },
-    {
-      id: 7,
-      nombre: "Cinturones",
-      descripcion: "Variedad de cinturones de diferentes colores para todos los niveles y estilos.",
-      precio: 7000,
-      imagen: "/imagenes/cinturones.jpg"
-    },
-    {
-      id: 8,
-      nombre: "Guantes de MMA",
-      descripcion: "Guantes de entrenamiento para MMA, con protección y agarre óptimos.",
-      precio: 8000,
-      imagen: "/imagenes/guantes.jpg"
-    },
-    {
-      id: 9,
-      nombre: "Soporte para Katana",
-      descripcion: "Elegante soporte de metal para exhibir tu katana con estilo y seguridad.",
-      precio: 9000,
-      imagen: "/imagenes/soporte_katana.png"
-    },
-    {
-      id: 10,
-      nombre: "Arte Samurai Legendario",
-      descripcion: "Cuadro artístico que captura la esencia y fuerza del samurái en estilo tradicional.",
-      precio: 10000,
-      imagen: "/imagenes/cuadro_samurai.png"
-    },
-    {
-      id: 11,
-      nombre: "MiniKatana Keychain",
-      descripcion: "Llavero exclusivo en miniatura de una katana, perfecto para fans y coleccionistas.",
-      precio: 11000,
-      imagen: "/imagenes/llavero_minikatana.jpg"
-    },
-    {
-      id: 12,
-      nombre: "Bruce Lee Legend Figure",
-      descripcion: "Figura de acción detallada de Bruce Lee, un ícono eterno de las artes marciales.",
-      precio: 12000,
-      imagen: "/imagenes/juguete.jpg"
-    }
-  ];
+  useEffect(() => {
+    const traerProductos = async () => {
+      try {
+        const productosCol = collection(db, "productos");
+        const q = query(productosCol, orderBy("precio", "asc"));
+        const querySnapshot = await getDocs(q);
+        const productosObtenidos = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProductosDB(productosObtenidos);
+      } catch (error) {
+        console.error("Error al traer productos desde Firestore:", error);
+      }
+    };
+
+    traerProductos();
+  }, []);
 
   return (
     <div style={styles.contenedor}>
-      {productos.filter(filtro).map(producto => (
+      {productosDB.filter(filtro).map(producto => (
         <div
           key={producto.id}
           style={{
@@ -187,6 +122,9 @@ const styles = {
 };
 
 export default Productos;
+
+
+
 
 
 
